@@ -18,37 +18,42 @@ async def get_ip(ctx: discord.ApplicationContext):
 # Comando para apagar el sistema
 @bot.slash_command(name="shutdown", description="Apaga el servidor (requiere permisos sudo).")
 async def shutdown(ctx: discord.ApplicationContext):
-    if str(ctx.author.id) == os.getenv('ADMIN_USER_ID'):
-        try:
-            await ctx.respond("Apagando el servidor...")
-            subprocess.run(['sudo', 'shutdown', 'now'])
-        except Exception as e:
-            await ctx.respond(f"Error: {str(e)}")
-    else:
-        await ctx.respond("No tienes permiso para ejecutar este comando.")
+    try:
+        await ctx.respond("Apagando el servidor...")
+        subprocess.run(['sudo', 'shutdown', 'now'])
+    except Exception as e:
+        await ctx.respond(f"Error: {str(e)}")
 
 @bot.slash_command(name="reboot", description="Reinicia el servidor (requiere permisos sudo).")
 async def reboot(ctx: discord.ApplicationContext):
-    if str(ctx.author.id) == os.getenv('ADMIN_USER_ID'):
-        try:
-            await ctx.respond("Reiniciando el servidor...")
-            subprocess.run(['sudo', 'reboot', 'now'])
-        except Exception as e:
-            await ctx.respond(f"Error: {str(e)}")
-    else:
-        await ctx.respond("No tienes permiso para ejecutar este comando.")
+    try:
+        await ctx.respond("Reiniciando el servidor...")
+        subprocess.run(['sudo', 'reboot', 'now'])
+    except Exception as e:
+        await ctx.respond(f"Error: {str(e)}")
+
+
 
 @bot.slash_command(name="start-minecraft", description="Inicia el servidor de Minecraft")
 async def start_minecraft(ctx: discord.ApplicationContext):
-    if str(ctx.author.id) == os.getenv('ADMIN_USER_ID'):  # Verifica si el usuario es el administrador
-        try:
-            await ctx.respond("Iniciando el servidor de Minecraft...")
-            # Cambia al directorio y ejecuta el script run.sh con sudo
-            subprocess.run(['sudo', 'bash', '-c', 'cd /home/minecraft/minecraft-server && ./run.sh'], check=True)
-            await ctx.respond("Servidor de Minecraft iniciado.")
-        except subprocess.CalledProcessError as e:
-            await ctx.respond(f"Error al iniciar el servidor: {str(e)}")
-    else:
-        await ctx.respond("No tienes permiso para ejecutar este comando.")
+    role_id = 1287285939751747666 
+    role = ctx.guild.get_role(role_id)
+
+    await ctx.respond(f"{role.mention} Iniciando el servidor de Minecraft...")
+
+    try:
+        # Cambia al directorio y ejecuta el script run.sh con sudo desde allí
+        process = subprocess.Popen(
+            ['sudo', './run.sh'], 
+            cwd='/home/minecraft/minecraft-server',  # Establece el directorio de trabajo
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE
+        )
+
+        await ctx.send("Servidor de Minecraft iniciado. Espera unos 2 min...")
+        
+    except Exception as e:
+        print(e)
+        await ctx.send(f"Error al ejecutar el comando: {str(e)}")
 
 bot.run(os.getenv('TOKEN'))
